@@ -94,10 +94,16 @@ all_dependencies = all_dependencies.union(set(got))
 for dependency in all_dependencies:
     if dependency.startswith("./"):
         continue
-    if not dependency.startswith(py37Path):
+    
+    end = ""
+    if dependency.startswith(sys.base_prefix):
+        end = dependency[len(sys.base_prefix) + 1 :]
+    elif dependency.startswith(sys.prefix):
+        end = dependency[len(sys.prefix) + 1 :]
+    else:
         continue
+        
     print(dependency)
-    end = dependency[len(py37Path) + 1 :]
     if end.lower().startswith("lib"):
         end = end[4:]
         if end.lower().startswith("site-packages"):
@@ -108,25 +114,27 @@ for dependency in all_dependencies:
     tgtreal = os.path.join(runtime, os.path.dirname(end))
     copycheck(dependency, tgtreal)
 
+os.makedirs(runtime, exist_ok=True)
 with open(os.path.join(runtime, f"python{pyversion2}._pth"), "w") as ff:
     ff.write("..\n.")
 
-copycheck(os.path.join(py37Path, "python3.dll"), runtime)
-copycheck(os.path.join(py37Path, f"python{pyversion2}.dll"), runtime)
-copycheck(os.path.join(py37Path, "Dlls/sqlite3.dll"), runtime)
+base_prefix = sys.base_prefix
+copycheck(os.path.join(base_prefix, "python3.dll"), runtime)
+copycheck(os.path.join(base_prefix, f"python{pyversion2}.dll"), runtime)
+copycheck(os.path.join(base_prefix, "Dlls/sqlite3.dll"), runtime)
 
-copycheck(os.path.join(py37Path, "Lib/encodings"), runtime)
-copycheck(os.path.join(py37Path, "DLLs/libffi-7.dll"), runtime)
-copycheck(os.path.join(py37Path, "DLLs/libffi-8.dll"), runtime)
+copycheck(os.path.join(base_prefix, "Lib/encodings"), runtime)
+copycheck(os.path.join(base_prefix, "DLLs/libffi-7.dll"), runtime)
+copycheck(os.path.join(base_prefix, "DLLs/libffi-8.dll"), runtime)
 
+import site
 try:
     from PyQt5 import QtCore
-
     qtver = "Qt5"
-except:
+    pyqtdir = os.path.join([p for p in site.getsitepackages() if 'site-packages' in p][0], f"Py{qtver}")
+except Exception:
     qtver = "Qt6"
-
-pyqtdir = os.path.join(py37Path, f"Lib/site-packages/Py{qtver}")
+    pyqtdir = os.path.join(site.getsitepackages()[0], "Lib", "site-packages", f"Py{qtver}")
 pyqtbindir = os.path.join(pyqtdir, f"{qtver}/bin")
 pyqtplgdir = os.path.join(pyqtdir, f"{qtver}/plugins")
 

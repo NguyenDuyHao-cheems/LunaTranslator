@@ -183,6 +183,42 @@ def _ocr_focus_switch_near():
     gobject.base.translation_ui.startTranslater()
 
 
+@tryprint
+def _load_ocr_layout_by_index(index):
+    source = gobject.base.textsource
+    if not hasattr(source, "set_active_ocr_area"):
+        gobject.base.displayinfomessage("Vui lòng bật chế độ đọc OCR trước", "<msg_error_Origin>")
+        return
+
+    layouts = list(globalconfig.get("ocr_layouts", {}).items())
+    if index < len(layouts):
+        name, rect = layouts[index]
+        source.set_active_ocr_area(rect)
+        gobject.base.displayinfomessage(f"Đã tải OCR: {name}", "<msg_info_refresh>")
+    else:
+        gobject.base.displayinfomessage(f"Chưa lưu OCR Layout {index+1}", "<msg_error_Origin>")
+
+
+@tryprint
+def _save_ocr_layout_hotkey():
+    source = gobject.base.textsource
+    if not hasattr(source, "ranges") or not hasattr(source, "getuseranges"):
+        gobject.base.displayinfomessage("Vui lòng bật chế độ đọc OCR trước", "<msg_error_Origin>")
+        return
+
+    valid_rects = [r.range_ui.getrect() for r in source.getuseranges() if r.range_ui.getrect() is not None]
+    if not valid_rects:
+        gobject.base.displayinfomessage("Không tìm thấy vùng chọn OCR nào", "<msg_error_Origin>")
+        return
+        
+    rect = valid_rects[-1]
+        
+    import datetime
+    name = datetime.datetime.now().strftime("Hotkey Layout %H:%M:%S")
+    globalconfig.setdefault("ocr_layouts", {})[name] = rect
+    gobject.base.displayinfomessage(f"Đã lưu OCR: {name}", "<msg_info_refresh>")
+
+
 def safesaveall():
     _ = NativeUtils.SimpleCreateMutex("LUNASAVECONFIGUPDATE")
     if windows.GetLastError() != windows.ERROR_ALREADY_EXISTS:
@@ -193,6 +229,15 @@ def registrhotkeys(self):
     self.referlabels = {}
     self.referlabels_data = {}
     self.registok = {}
+
+    for i in range(1, 6):
+        k = f"load_ocr_layout_{i}"
+        if k not in globalconfig["quick_setting"]["all"]:
+            globalconfig["quick_setting"]["all"][k] = {"use": False, "name": f"加载OCR布局 {i}", "keystring": ""}
+
+    if "save_ocr_layout" not in globalconfig["quick_setting"]["all"]:
+        globalconfig["quick_setting"]["all"]["save_ocr_layout"] = {"use": False, "name": "保存当前OCR布局", "keystring": ""}
+
     self.bindfunctions = {
         "_1": gobject.base.translation_ui.startTranslater,
         "_2": gobject.base.translation_ui.changeTranslateMode,
@@ -248,6 +293,12 @@ def registrhotkeys(self):
         "49": lambda: _ocr_focus_No(),
         "50": safesaveall,
         "51": lambda: gobject.base.translation_ui.changemousetransparentstate(1),
+        "load_ocr_layout_1": lambda: _load_ocr_layout_by_index(0),
+        "load_ocr_layout_2": lambda: _load_ocr_layout_by_index(1),
+        "load_ocr_layout_3": lambda: _load_ocr_layout_by_index(2),
+        "load_ocr_layout_4": lambda: _load_ocr_layout_by_index(3),
+        "load_ocr_layout_5": lambda: _load_ocr_layout_by_index(4),
+        "save_ocr_layout": _save_ocr_layout_hotkey,
     }
 
     for name in globalconfig["myquickkeys"]:
@@ -280,7 +331,7 @@ hotkeys = [
         ],
     ],
     ["HOOK", ["_11", "_12"]],
-    ["OCR", ["_13", "_14", "_14_1", "_26", "_26_1", "46", "47", "48", "49"]],
+    ["OCR", ["_13", "_14", "_14_1", "_26", "_26_1", "46", "47", "48", "49", "save_ocr_layout", "load_ocr_layout_1", "load_ocr_layout_2", "load_ocr_layout_3", "load_ocr_layout_4", "load_ocr_layout_5"]],
     ["剪贴板", ["36", "_4", "_28"]],
     ["TTS", ["_32", "_7", "_7_1"]],
     ["游戏", ["_10", "_15", "_21", "_22", "43", "41", "42"]],

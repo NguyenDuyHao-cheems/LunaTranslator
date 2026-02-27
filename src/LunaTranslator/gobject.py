@@ -103,6 +103,13 @@ else:
 runtimedir = "files/" + runtimedir
 sys_le_xp = int(platform.version().split(".")[0]) <= 5
 
+if hasattr(os, "add_dll_directory"):
+    try:
+        os.add_dll_directory(os.path.abspath(os.path.dirname(sys.executable)))
+        os.add_dll_directory(os.path.abspath("files/DLL" + ("32", "64")[runtime_bit_64]))
+    except:
+        pass
+
 
 class RTL_OSVERSIONINFOW(Structure):
     _fields_ = [

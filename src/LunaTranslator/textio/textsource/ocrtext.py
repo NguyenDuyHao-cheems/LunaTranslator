@@ -165,6 +165,14 @@ class ocrtext(basetext):
     def setrect(self, rect):
         self.ranges[-1].range_ui.setrect(rect)
 
+    def set_active_ocr_area(self, rect):
+        if not rect:
+            return
+        self.clearrange()
+        self.newrangeadjustor()
+        self.ranges[-1].range_ui.setrect(rect)
+        self.stop = False
+
     def setstyle(self):
         [_.range_ui.setstyle() for _ in self.ranges]
 

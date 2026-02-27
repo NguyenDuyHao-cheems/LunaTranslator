@@ -69,18 +69,11 @@ def tryqueryfromhost():
 
 
 def trygetupdate():
-    try:
-        result = tryqueryfromhost()
-        version, link, sha256 = result["version"], result["link"], result["sha256"]
-        return version, link, sha256
-    except:
-        print_exc()
-        return None
+    return None
 
 
 def doupdate():
-    if not gobject.base.update_avalable:
-        return
+    return
     exe1 = gobject.getcachedir("update/Updater.exe")
     exe = os.path.abspath(exe1)
     shutil.copy(

@@ -948,7 +948,25 @@
                 "name": "多重区域模式_切换到鼠标临近区域"
             },
             "49": {
-                "name": "多重区域模式_取消区域聚焦"
+                "name": "多重区域模式_取消聚焦区域"
+            },
+            "save_ocr_layout": {
+                "name": "保存当前OCR布局"
+            },
+            "load_ocr_layout_1": {
+                "name": "加载OCR布局 1"
+            },
+            "load_ocr_layout_2": {
+                "name": "加载OCR布局 2"
+            },
+            "load_ocr_layout_3": {
+                "name": "加载OCR布局 3"
+            },
+            "load_ocr_layout_4": {
+                "name": "加载OCR布局 4"
+            },
+            "load_ocr_layout_5": {
+                "name": "加载OCR布局 5"
             },
             "50": {
                 "name": "立即保存配置"
@@ -1993,7 +2011,7 @@
     ],
     "selectable": true,
     "selectableEx": false,
-    "autoupdate": true,
+    "autoupdate": false,
     "proxies": null,
     "viewlistpos": 0,
     "wordlabel": [],

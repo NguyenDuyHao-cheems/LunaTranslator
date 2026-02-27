@@ -97,6 +97,9 @@ def downloadmapie():
     )
     subprocess.run(f"7z x -y magpie.zip")
     os.chdir(rootDir)
+    import shutil
+    if os.path.exists("files/Magpie"):
+        shutil.rmtree("files/Magpie")
     os.rename("scripts/temp/Magpie", "files/Magpie")
 
 
@@ -201,6 +204,9 @@ def downloadOCRModel():
         md5 = hashlib.md5(ff.read()).hexdigest()
     os.remove(f"jazhchten.zip")
     os.chdir("..")
+    if os.path.exists(md5):
+        import shutil
+        shutil.rmtree(md5)
     os.rename(__, md5)
     os.chdir(rootDir)
 
@@ -209,7 +215,7 @@ def buildhook(arch, target, hookonly=False):
 
     os.chdir("NativeImpl/LunaHook")
     archA = ("win32", "x64")[arch == "x64"]
-    vsver = "Visual Studio 17 2022"
+    vsver = "Visual Studio 18 2026"
     Tool = "v141_xp" if target == "winxp" else f"host={arch}"
     if target == "win10":
         config = "-DWIN10ABOVE=ON"
@@ -245,7 +251,7 @@ def buildPlugins(arch, target, configx="", sexe=False):
     elif target == "winxp":
         config = "-DWINXP=ON -DWIN10ABOVE=OFF"
     sysver = " -DCMAKE_SYSTEM_VERSION=10.0.26621.0 "
-    vsver = "Visual Studio 17 2022"
+    vsver = "Visual Studio 18 2026"
     Tool = "v141_xp" if target == "winxp" else f"host={arch}"
 
     if arch == "x86" and target == "win10":
@@ -329,9 +335,7 @@ if __name__ == "__main__":
         arch = sys.argv[2]
         pythonversion = sys.argv[3]
         target = sys.argv[4]
-        py37Path = (
-            f"C:\\hostedtoolcache\\windows\\Python\\{pythonversion}\\{arch}\\python.exe"
-        )
+        py37Path = sys.executable
         os.chdir(rootDir)
         subprocess.run(f"{py37Path} -m pip install --upgrade pip")
         if 1:  # target == "win7":
@@ -340,8 +344,8 @@ if __name__ == "__main__":
             subprocess.run(f"{py37Path} -m pip install tinycss2 pyqt6")
 
         # 3.8之后会莫名其妙引用这个b东西，然后这个b东西会把一堆没用的东西导入进来
-        shutil.rmtree(os.path.join(os.path.dirname(py37Path), "Lib\\test"))
-        shutil.rmtree(os.path.join(os.path.dirname(py37Path), "Lib\\unittest"))
+        shutil.rmtree(os.path.join(os.path.dirname(py37Path), "Lib\\test"), ignore_errors=True)
+        shutil.rmtree(os.path.join(os.path.dirname(py37Path), "Lib\\unittest"), ignore_errors=True)
         # 放弃，3.8需要安装KB2533623才能运行，3.7用不着。
         subprocess.run(
             f"{py37Path} {os.path.join(rootthisfiledir,'collectpyruntime.py')} {target}"

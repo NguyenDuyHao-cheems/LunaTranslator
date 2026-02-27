@@ -1,0 +1,1 @@
+' {\n            "name": "Anki_添加"\n        }\n    }\n},\n"reader": {\n    "windowstts": {\n        "use": t'

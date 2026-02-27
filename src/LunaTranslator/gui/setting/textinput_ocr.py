@@ -27,6 +27,7 @@ from gui.usefulwidget import (
     manybuttonlayout,
     makesubtab_lazy,
     makescrollgrid,
+    MyInputDialog,
 )
 from traceback import print_exc
 from myutils.keycode import vkcode_map
@@ -321,6 +322,72 @@ def _ocrparam(self):
     return self._ocrparam
 
 
+def _update_layout_combo(self):
+    layouts = globalconfig.setdefault("ocr_layouts", {})
+    self.layout_combo.blockSignals(True)
+    self.layout_combo.clear()
+    self.layout_combo.addItems(list(layouts.keys()))
+    self.layout_combo.blockSignals(False)
+
+
+def save_ocr_layout(self):
+    ranges = gobject.base.textsource.getuseranges()
+    if ranges:
+        rect = ranges[0].range_ui.getrect()
+    elif gobject.base.textsource.ranges:
+        rect = gobject.base.textsource.ranges[-1].range_ui.getrect()
+    else:
+        return
+        
+    if not rect:
+        return
+        
+    name = MyInputDialog(self, "保存布局", "输入布局名称:", "")
+    if not name:
+        return
+        
+    globalconfig.setdefault("ocr_layouts", {})[name] = rect
+    _update_layout_combo(self)
+    self.layout_combo.setCurrentText(name)
+    
+
+def load_ocr_layout(self):
+    name = self.layout_combo.currentText()
+    if not name:
+        return
+    rect = globalconfig.get("ocr_layouts", {}).get(name)
+    if rect:
+        gobject.base.textsource.set_active_ocr_area(rect)
+        
+
+def delete_ocr_layout(self):
+    name = self.layout_combo.currentText()
+    if not name:
+        return
+    layouts = globalconfig.setdefault("ocr_layouts", {})
+    if name in layouts:
+        del layouts[name]
+    _update_layout_combo(self)
+
+
+def _ocr_layouts_ui(self):
+    self._ocr_layouts_param = NQGroupBox()
+    self._ocr_layouts_l = LFormLayout(self._ocr_layouts_param)
+    
+    self.layout_combo = SuperCombo()
+    _update_layout_combo(self)
+    
+    btn_save = D_getIconButton(callback=functools.partial(save_ocr_layout, self), icon="fa.save", tips="保存当前区域")
+    btn_load = D_getIconButton(callback=functools.partial(load_ocr_layout, self), icon="fa.folder-open", tips="加载选中区域")
+    btn_delete = D_getIconButton(callback=functools.partial(delete_ocr_layout, self), icon="fa.trash", tips="删除选中区域")
+    
+    self._ocr_layouts_l.addRow("布局管理", getboxlayout([
+        self.layout_combo, 
+        btn_save, btn_load, btn_delete
+    ]))
+    return self._ocr_layouts_param
+
+
 @Singleton
 class showocrimage(saveposwindow):
     def closeEvent(self, e):
@@ -546,6 +613,7 @@ def internal(self):
     allothers = [
         [dict(title="识别设置", type="grid", grid=reco)],
         [dict(title="自动化执行", grid=autorun, button=D_getdoclink("ocrparam.html"))],
+        [functools.partial(_ocr_layouts_ui, self)],
         [dict(title="其他设置", type="grid", grid=others)],
     ]
 
