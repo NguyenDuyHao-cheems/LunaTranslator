@@ -161,34 +161,38 @@ def ListProcess(exe=None):
 
 
 def getExeIcon(name: str, icon=True, cache=False, large=False):
-    if name.lower().endswith(".lnk"):
-        exepath, args, iconpath, dirp = NativeUtils.GetLnkTargetPath(name)
-        if os.path.exists(iconpath):
-            name = iconpath
-        elif os.path.exists(exepath):
-            name = exepath
-    data = NativeUtils.ExtractExeIconData(name, large=large)
+    succ = False
     if cache:
         fn = gobject.getcachedir(
             "icon/{}.png".format(hashlib.md5(name.encode("utf8")).hexdigest())
         )
-    if data:
-        pixmap = QPixmap()
-        pixmap.loadFromData(data)
-        if cache:
-            pixmap.save(fn)
-    else:
-        succ = False
-        if cache and os.path.exists(fn):
+        if os.path.exists(fn):
             try:
                 pixmap = QPixmap()
                 pixmap.load(fn)
-                succ = True
+                if not pixmap.isNull():
+                    succ = True
             except:
                 pass
-                # print_exc()
-        if succ == False:
+
+    if not succ:
+        if name.lower().endswith(".lnk"):
+            exepath, args, iconpath, dirp = NativeUtils.GetLnkTargetPath(name)
+            if os.path.exists(iconpath):
+                name = iconpath
+            elif os.path.exists(exepath):
+                name = exepath
+        data = NativeUtils.ExtractExeIconData(name, large=large)
+        if data:
             pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            if cache and not pixmap.isNull():
+                pixmap.save(fn)
+                succ = True
+        
+    if not succ:
+        pixmap = QPixmap()
+        
     if icon:
         return QIcon(pixmap)
     else:

@@ -30,8 +30,9 @@ def testdocconnect():
                 wait.set()
 
         __(i, main_server, proxy)
-    wait.wait()
-    gobject.serverindex2 = results[0][0]
+    wait.wait(10.0)
+    if results:
+        gobject.serverindex2 = results[0][0]
 
 
 def tryqueryfromhost():
@@ -63,9 +64,11 @@ def tryqueryfromhost():
         __(i, main_server, proxy)
         if proxy.get("https"):
             __(i, main_server, None)
-    wait.wait()
-    gobject.serverindex = results[0][0]
-    return results[0][1]
+    wait.wait(10.0)
+    if results:
+        gobject.serverindex = results[0][0]
+        return results[0][1]
+    return None
 
 
 def trygetupdate():

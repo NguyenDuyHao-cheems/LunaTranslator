@@ -16,13 +16,17 @@ def GetDllpath(_, base=None):
         return os.path.join(base, _[runtime_bit_64])
 
 
+_created_dirs = set()
+
 def __getdir(name="", basedir="cache"):
 
     fd = os.path.dirname(name)
     fn = os.path.basename(name)
     fn1 = os.path.abspath(basedir)
     fn1 = os.path.join(fn1, fd)
-    os.makedirs(fn1, exist_ok=True)
+    if fn1 not in _created_dirs:
+        os.makedirs(fn1, exist_ok=True)
+        _created_dirs.add(fn1)
     fn1 = os.path.join(fn1, fn)
     return fn1
 

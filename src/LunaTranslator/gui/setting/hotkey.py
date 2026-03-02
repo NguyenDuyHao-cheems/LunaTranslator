@@ -92,16 +92,16 @@ def invoke_liandianqi_or_stop():
         @threader
         def __():
             d = globalconfig["quick_setting"]["all"]["44"]
+            flags = {
+                1: (windows.MOUSEEVENTF_LEFTDOWN, windows.MOUSEEVENTF_LEFTUP),
+                2: (windows.MOUSEEVENTF_RIGHTDOWN, windows.MOUSEEVENTF_RIGHTUP),
+                4: (
+                    windows.MOUSEEVENTF_MIDDLEDOWN,
+                    windows.MOUSEEVENTF_MIDDLEUP,
+                ),
+            }
             while d["use"] and not liandianqi_stoped:
                 if key in (1, 2, 4):
-                    flags = {
-                        1: (windows.MOUSEEVENTF_LEFTDOWN, windows.MOUSEEVENTF_LEFTUP),
-                        2: (windows.MOUSEEVENTF_RIGHTDOWN, windows.MOUSEEVENTF_RIGHTUP),
-                        4: (
-                            windows.MOUSEEVENTF_MIDDLEDOWN,
-                            windows.MOUSEEVENTF_MIDDLEUP,
-                        ),
-                    }
                     windows.mouse_event(flags[key][0], 0, 0, 0)
                     time.sleep(0.1)
                     windows.mouse_event(flags[key][1], 0, 0, 0)
@@ -138,8 +138,10 @@ def _calc_dis_and_centerdis(rect, point):
     (x1, y1), (x2, y2) = rect
     px, py = point.x, point.y
 
-    x1, x2 = sorted([x1, x2])
-    y1, y2 = sorted([y1, y2])
+    if x1 > x2:
+        x1, x2 = x2, x1
+    if y1 > y2:
+        y1, y2 = y2, y1
 
     if x1 <= px <= x2 and y1 <= py <= y2:
         edge_dist = 0
